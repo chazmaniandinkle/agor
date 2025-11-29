@@ -11,32 +11,10 @@ import type { CursorToolCallEvent, ToolCallState } from './types';
 
 /**
  * Service interface for creating messages
+ * Uses a flexible interface compatible with FeathersJS services
  */
 export interface MessagesService {
-  create(data: {
-    message_id: string;
-    session_id: string;
-    task_id?: string;
-    type: 'assistant';
-    role: typeof MessageRole.ASSISTANT;
-    index: number;
-    timestamp: string;
-    content_preview: string;
-    content: Array<{
-      type: 'tool_use' | 'tool_result';
-      id?: string;
-      name?: string;
-      input?: Record<string, unknown>;
-      tool_use_id?: string;
-      content?: string;
-      is_error?: boolean;
-    }>;
-    tool_uses?: Array<{
-      id: string;
-      name: string;
-      input: Record<string, unknown>;
-    }>;
-  }): Promise<unknown>;
+  create(data: Record<string, unknown>): Promise<unknown>;
 }
 
 export class ToolCallAggregator {
@@ -76,7 +54,7 @@ export class ToolCallAggregator {
   ): Promise<void> {
     // Find matching pending tool (Cursor doesn't provide IDs, match by name)
     const toolState = Array.from(this.pendingTools.values()).find(
-      (t) => t.name === event.name && !t.completed
+      t => t.name === event.name && !t.completed
     );
 
     if (!toolState) {

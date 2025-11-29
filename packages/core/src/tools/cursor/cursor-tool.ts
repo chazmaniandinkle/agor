@@ -12,10 +12,9 @@
  * - ⏳ Session import (future: when Cursor provides export API)
  */
 
-import { spawn, type ChildProcess } from 'child_process';
-import { execSync } from 'child_process';
+import { type ChildProcess, execSync, spawn } from 'child_process';
 import { generateId } from '../../lib/ids';
-import type { Message, SessionID, TaskID } from '../../types';
+import type { Message, MessageID, SessionID, TaskID } from '../../types';
 import { MessageRole } from '../../types';
 import type {
   CreateSessionConfig,
@@ -100,7 +99,7 @@ export class CursorTool implements ITool {
     const args = new CursorCommandBuilder()
       .withPrintMode()
       .withOutputFormat('stream-json')
-      .withModel(config.model as string | undefined || this.config.model || 'claude-sonnet-4')
+      .withModel((config.model as string | undefined) || this.config.model || 'claude-sonnet-4')
       .withPrompt(config.initialPrompt || 'Hello')
       .build();
 
@@ -135,7 +134,7 @@ export class CursorTool implements ITool {
     }
 
     // Generate Agor session ID
-    const agorSessionId = generateId();
+    const agorSessionId = generateId() as SessionID;
 
     // Store session context
     this.sessionManager.createContext(agorSessionId, {
@@ -146,7 +145,7 @@ export class CursorTool implements ITool {
     });
 
     // Wait for process to complete initial prompt
-    await new Promise((resolve) => proc.on('exit', resolve));
+    await new Promise(resolve => proc.on('exit', resolve));
 
     console.log('[CursorTool] Session created:', { agorSessionId, cursorSessionId });
 
@@ -217,7 +216,7 @@ export class CursorTool implements ITool {
     const parser = new CursorEventParser();
     const toolAggregator = new ToolCallAggregator();
 
-    let currentMessageId: string | null = null;
+    let currentMessageId: MessageID | null = null;
     let messageAccumulator: MessageAccumulator | null = null;
     let userMessageCreated = false;
     let fullText = '';
@@ -241,7 +240,7 @@ export class CursorTool implements ITool {
             // Create user message once
             if (!userMessageCreated && this.messagesService) {
               const userMessage = await this.messagesService.create({
-                message_id: generateId(),
+                message_id: generateId() as MessageID,
                 session_id: sessionId as SessionID,
                 task_id: taskId as TaskID | undefined,
                 type: 'user' as const,
@@ -259,13 +258,10 @@ export class CursorTool implements ITool {
           case 'assistant':
             // Initialize streaming if callbacks provided
             if (streamingCallbacks && !currentMessageId) {
-              currentMessageId = generateId();
-              messageAccumulator = new MessageAccumulator(
-                currentMessageId,
-                async (chunk) => {
-                  await streamingCallbacks.onStreamChunk(currentMessageId!, chunk);
-                }
-              );
+              currentMessageId = generateId() as MessageID;
+              messageAccumulator = new MessageAccumulator(currentMessageId, async chunk => {
+                await streamingCallbacks.onStreamChunk(currentMessageId!, chunk);
+              });
 
               await streamingCallbacks.onStreamStart(currentMessageId, {
                 session_id: sessionId as SessionID,
@@ -288,12 +284,7 @@ export class CursorTool implements ITool {
             if (event.subtype === 'started') {
               await toolAggregator.onToolStarted(event);
             } else if (event.subtype === 'completed' && this.messagesService) {
-              await toolAggregator.onToolCompleted(
-                event,
-                sessionId,
-                taskId,
-                this.messagesService
-              );
+              await toolAggregator.onToolCompleted(event, sessionId, taskId, this.messagesService);
             }
             break;
 
@@ -321,7 +312,9 @@ export class CursorTool implements ITool {
                 content: [{ type: 'text', text: fullText }],
                 metadata: {
                   model: context.model || 'unknown',
-                  tokens: event.usage || { input: 0, output: 0 },
+                  tokens: event.usage
+                    ? { input: event.usage.input_tokens, output: event.usage.output_tokens }
+                    : { input: 0, output: 0 },
                   cursor: { session_id: context.cursorSessionId },
                 },
               });
@@ -331,7 +324,10 @@ export class CursorTool implements ITool {
 
             // Capture token usage
             if (event.usage) {
-              tokenUsage = event.usage;
+              tokenUsage = {
+                input: event.usage.input_tokens,
+                output: event.usage.output_tokens,
+              };
             }
 
             // Check for errors
@@ -401,13 +397,13 @@ export class CursorTool implements ITool {
     proc.kill('SIGTERM');
 
     // Wait for process to exit (with timeout)
-    const exitCode = await new Promise<number>((resolve) => {
+    const exitCode = await new Promise<number>(resolve => {
       const timeout = setTimeout(() => {
         proc.kill('SIGKILL'); // Force kill if not responding
         resolve(-1);
       }, 5000);
 
-      proc.on('exit', (code) => {
+      proc.on('exit', code => {
         clearTimeout(timeout);
         resolve(code || 0);
       });
