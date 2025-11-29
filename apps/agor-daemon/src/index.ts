@@ -212,7 +212,8 @@ const expandPath = (path: string): string => {
   return path;
 };
 
-const DB_PATH = expandPath(process.env.AGOR_DB_PATH || 'file:~/.agor/agor.db');
+const agorHome = process.env.AGOR_HOME || `${homedir()}/.agor`;
+const DB_PATH = expandPath(process.env.AGOR_DB_PATH || `file:${agorHome}/agor.db`);
 
 // Main async function
 async function main() {

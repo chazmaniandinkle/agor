@@ -114,7 +114,7 @@ export function getUIUrl(): string {
  */
 export async function isAgorInitialized(): Promise<boolean> {
   try {
-    const agorDir = path.join(homedir(), '.agor');
+    const agorDir = process.env.AGOR_HOME || path.join(homedir(), '.agor');
     const dbPath = path.join(agorDir, 'agor.db');
 
     // Check if both directory and database exist

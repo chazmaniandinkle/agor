@@ -8,7 +8,7 @@ import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-const AGOR_DIR = join(homedir(), '.agor');
+const AGOR_DIR = process.env.AGOR_HOME || join(homedir(), '.agor');
 const TOKEN_FILE = join(AGOR_DIR, 'cli-token');
 
 export interface StoredAuth {

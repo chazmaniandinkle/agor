@@ -49,7 +49,8 @@ export async function seedDevFixtures(options: SeedOptions = {}): Promise<SeedRe
   const worktreeRepo = new WorktreeRepository(db);
   const boardRepo = new BoardRepository(db);
 
-  const baseDir = options.baseDir ?? path.join(os.homedir(), '.agor', 'repos');
+  const agorHome = process.env.AGOR_HOME || path.join(os.homedir(), '.agor');
+  const baseDir = options.baseDir ?? path.join(agorHome, 'repos');
   const userId = (options.userId ?? 'anonymous') as UUID;
 
   // Check if data already exists (always check for idempotency)

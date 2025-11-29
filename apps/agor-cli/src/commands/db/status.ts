@@ -16,7 +16,8 @@ export default class DbStatus extends Command {
   async run(): Promise<void> {
     try {
       // Determine database path (same logic as daemon)
-      const dbPath = process.env.AGOR_DB_PATH || `file:${join(homedir(), '.agor', 'agor.db')}`;
+      const agorHome = process.env.AGOR_HOME || join(homedir(), '.agor');
+      const dbPath = process.env.AGOR_DB_PATH || `file:${join(agorHome, 'agor.db')}`;
 
       const db = createDatabase({ url: dbPath });
 
@@ -45,7 +46,7 @@ export default class DbStatus extends Command {
       }
 
       this.log(chalk.bold('\nApplied migrations:\n'));
-      result.rows.forEach((row) => {
+      result.rows.forEach(row => {
         const migration = row as unknown as { hash: string; created_at: number };
         const date = new Date(migration.created_at);
         const formattedDate = date.toLocaleString();

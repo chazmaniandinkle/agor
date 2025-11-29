@@ -13,10 +13,10 @@ import { DAEMON } from './constants';
 import type { AgorConfig, UnknownJson } from './types';
 
 /**
- * Get Agor home directory (~/.agor)
+ * Get Agor home directory (~/.agor or AGOR_HOME env var)
  */
 export function getAgorHome(): string {
-  return path.join(os.homedir(), '.agor');
+  return process.env.AGOR_HOME || path.join(os.homedir(), '.agor');
 }
 
 /**

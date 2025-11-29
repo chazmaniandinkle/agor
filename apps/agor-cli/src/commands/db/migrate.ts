@@ -16,7 +16,8 @@ export default class DbMigrate extends Command {
   async run(): Promise<void> {
     try {
       // Determine database path (same logic as daemon)
-      const dbPath = process.env.AGOR_DB_PATH || `file:${join(homedir(), '.agor', 'agor.db')}`;
+      const agorHome = process.env.AGOR_HOME || join(homedir(), '.agor');
+      const dbPath = process.env.AGOR_DB_PATH || `file:${join(agorHome, 'agor.db')}`;
 
       this.log('Running database migrations...');
 

@@ -179,8 +179,11 @@ export type Database = LibSQLDatabase<typeof schema>;
 
 /**
  * Default database path for local development
+ * Respects AGOR_HOME env var if set
  */
-export const DEFAULT_DB_PATH = 'file:~/.agor/agor.db';
+export const DEFAULT_DB_PATH = process.env.AGOR_HOME
+  ? `file:${process.env.AGOR_HOME}/agor.db`
+  : 'file:~/.agor/agor.db';
 
 /**
  * Create database with default local configuration
