@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "bin": {
+    "cogn8": "./bin/run.js",
     "agor": "./bin/run.js"
   },
   "scripts": {
