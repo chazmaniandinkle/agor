@@ -33,4 +33,11 @@ export const AVAILABLE_AGENTS: AgenticToolOption[] = [
     description: 'Open-source terminal AI with 75+ LLM providers',
     beta: true,
   },
+  {
+    id: 'cursor',
+    name: 'Cursor',
+    icon: '📝',
+    description: 'Cursor AI coding agent',
+    beta: true,
+  },
 ];

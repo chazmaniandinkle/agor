@@ -38,6 +38,7 @@ export const ToolIcon: React.FC<ToolIconProps> = ({ tool, size = 32, className =
     codex: '💻',
     gemini: '💎',
     opencode: '🌐',
+    cursor: '📝',
   };
 
   if (!logoSrc) {
